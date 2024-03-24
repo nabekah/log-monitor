@@ -30,25 +30,25 @@ services:
   #
   # Container to continuously ping hosts.
   #
-  ping:
-    build:
-      context: docker/ping
-      dockerfile: "Dockerfile"
-    environment:
-      #
-      # Host to ping.  Can be hostname or IP.  Space-delimited.
-      # Note that DNS lookups may fail, so consider pinging some IPs...
-      #
-      HOSTS: "google.com amazon.com google-dns cloudflare-dns "
-      #
-      # Comment the previous line and uncomment this one if you'd like to ping 
-      # some hosts on different continents.
-      #
-      #HOSTS: "google.com amazon.com google-dns cloudflare-dns cheetah.jp leopard.se"
-    volumes:
-      - logs:/logs/
-      - ./hosts.txt:/etc/hosts
-    restart: "always"
+  # ping:
+  #   build:
+  #     context: docker/ping
+  #     dockerfile: "Dockerfile"
+  #   environment:
+  #     #
+  #     # Host to ping.  Can be hostname or IP.  Space-delimited.
+  #     # Note that DNS lookups may fail, so consider pinging some IPs...
+  #     #
+  #     HOSTS: "google.com amazon.com google-dns cloudflare-dns "
+  #     #
+  #     # Comment the previous line and uncomment this one if you'd like to ping 
+  #     # some hosts on different continents.
+  #     #
+  #     #HOSTS: "google.com amazon.com google-dns cloudflare-dns cheetah.jp leopard.se"
+  #   volumes:
+  #     - logs:/logs/
+  #     - ./hosts.txt:/etc/hosts
+  #   restart: "always"
 
   #
   # Get metrics from ping logs for Prometheus.
@@ -98,10 +98,44 @@ services:
   #
   telegraf:
     image: telegraf:1.20
+    hostname: telegraf
     volumes:
       - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
     restart: "always"
 
+  aspserver:
+    build:
+      context: docker/aspServer
+      dockerfile: "Dockerfile"
+    hostname: aspServer
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2g"
+    command: sh telegraf
+    restart: "always"
+
+  dbserver:
+    build:
+      context: docker/aspServer
+      dockerfile: "Dockerfile"
+    hostname: dbServer
+    ports:
+      - "8001:8080"
+    volumes:
+      - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2g"
+    command: sh telegraf
+    restart: "always"
 
   #
   # The Loki database for storing logs.
