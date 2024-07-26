@@ -52,4 +52,72 @@ scrape_configs:
     static_configs:
       - targets: ["ping-metrics:8080"]
 
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://fabmobile.firstatlanticbank.com.gh
+          - https://fabinternet.firstatlanticbank.com.gh
+          - https://ibank.firstatlanticbank.com.gh:5000
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: (.*)(:80)?
+        target_label: __param_target
+      - source_labels: [__param_target]
+        regex: (.*)
+        target_label: instance
+        replacement: ${1}
+      - source_labels: []
+        regex: .*
+        target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  # - job_name: 'blackbox-ping'
+  #   metrics_path: /probe
+  #   params:
+  #     module: [icmp]
+  #   static_configs:
+  #   - targets:
+  #     - 8.8.8.8
+  #     - 8.8.4.4
+  #     - 1.1.1.1
+  #     - 1.0.0.1
+  #     - 208.67.222.222
+  #     - 208.67.220.220
+  #     - 9.9.9.9
+  #     - 149.112.112.112
+  #     - 198.41.0.4
+  #     - 192.203.230.10  # <== Put here your targets
+  #   relabel_configs:    # <== This comes from the blackbox exporter README
+  #   - source_labels: [__address__]
+  #     target_label: __param_target
+  #   - source_labels: [__param_target]
+  #     target_label: instance
+  #   - target_label: __address__
+  #     replacement: blackbox_exporter_ping:9116 # Blackbox exporter.
+
+  - job_name: 'blackbox-ping'                                                                                                                                                                      
+    metrics_path: /probe                                                                                                                                                                      
+    params:                                                                                                                                                                                   
+      module: [icmp]
+    scrape_interval: 5s
+    scrape_timeout: 2s      #ping                                                                                                                                                                    
+    static_configs:                                                                                                                                                                           
+      - targets: ['8.8.8.8', '8.8.4.4']                                                                                                                                                            
+        labels:                                                                                                                                                                               
+          group: 'Build'                                                                                                                                                                   
+      - targets: ['1.1.1.1', '1.0.0.1', '208.67.222.222']                                           
+        labels:                                                                                                                                                                               
+          group: 'RND' 
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter_ping:9115
+
+
 

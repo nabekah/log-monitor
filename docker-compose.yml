@@ -27,41 +27,6 @@ services:
       - logs:/logs/
     restart: "always"
 
-  #
-  # Container to continuously ping hosts.
-  #
-  # ping:
-  #   build:
-  #     context: docker/ping
-  #     dockerfile: "Dockerfile"
-  #   environment:
-  #     #
-  #     # Host to ping.  Can be hostname or IP.  Space-delimited.
-  #     # Note that DNS lookups may fail, so consider pinging some IPs...
-  #     #
-  #     HOSTS: "google.com amazon.com google-dns cloudflare-dns "
-  #     #
-  #     # Comment the previous line and uncomment this one if you'd like to ping 
-  #     # some hosts on different continents.
-  #     #
-  #     #HOSTS: "google.com amazon.com google-dns cloudflare-dns cheetah.jp leopard.se"
-  #   volumes:
-  #     - logs:/logs/
-  #     - ./hosts.txt:/etc/hosts
-  #   restart: "always"
-
-  #
-  # Get metrics from ping logs for Prometheus.
-  #
-  ping-metrics:
-    build:
-      context: docker/ping-metrics
-      dockerfile: "Dockerfile"
-    volumes:
-      - .:/mnt
-      - logs:/logs/
-    restart: "always"
-
 
   #
   # Container to read metrics from SEPTA Regional Rail.
@@ -120,22 +85,30 @@ services:
     command: sh telegraf
     restart: "always"
 
-  dbserver:
-    build:
-      context: docker/aspServer
-      dockerfile: "Dockerfile"
-    hostname: dbServer
-    ports:
-      - "8001:8080"
-    volumes:
-      - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "2g"
-    command: sh telegraf
-    restart: "always"
+  # windows:
+  #   image: dockurr/windows
+  #   container_name: windows
+  #   environment:
+  #     RAM_SIZE: "2G"
+  #     VERSION: "2012"
+  #   devices:
+  #     - /dev/kvm
+  #   cap_add:
+  #     - NET_ADMIN
+  #   ports:
+  #     - 8006:8006
+  #     - 3389:3389/tcp
+  #     - 3389:3389/udp
+  #   stop_grace_period: 2m   
+  #   # volumes:
+  #   #   - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
+  #   # deploy:
+  #   #   resources:
+  #   #     limits:
+  #   #       cpus: "2"
+  #   #       memory: "2g"
+  #   # command: sh telegraf
+  #   restart: "always"
 
   #
   # The Loki database for storing logs.
@@ -171,8 +144,29 @@ services:
       - ./data/prometheus:/prometheus
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
     restart: "always"
+  #
+  # blackBox to monitor HTTP Endpoint
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter
+    ports:
+      - "9115:9115"
+    dns: 8.8.8.8
+    restart: always
+    volumes:
+      - ./config:/config
+    command: '--config.file=/config/blackbox.yml'
 
 
+  blackbox_exporter_ping:
+    image: prom/blackbox-exporter
+    ports:
+      - "9116:9115"
+    dns: 8.8.8.8
+    restart: always
+    volumes:
+      - ./config/ping:/config
+    command: '--config.file=/config/blackbox.yml'
   #
   # Grafana, for viewing via the UI.
   #

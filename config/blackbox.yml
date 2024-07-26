@@ -1,0 +1,10 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_status_codes: [] #default to 2xx
+      #method: GET
+      method: HEAD              # <== This depends on what you want to do
+      no_follow_redirects: true # <== this depends on what you want to do
+  
