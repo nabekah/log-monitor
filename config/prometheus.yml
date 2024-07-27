@@ -58,9 +58,9 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - https://fabmobile.firstatlanticbank.com.gh
-          - https://fabinternet.firstatlanticbank.com.gh
-          - https://ibank.firstatlanticbank.com.gh:5000
+          - https://urltomonitor1
+          - https://urltomonitor2
+          - https://urltomonitor3
     relabel_configs:
       - source_labels: [__address__]
         regex: (.*)(:80)?
