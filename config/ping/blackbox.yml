@@ -7,7 +7,7 @@ modules:
       ip_protocol_fallback: false
   icmp_64kb:
     prober: icmp
-    timeout: 5s
+    timeout: 10s
     icmp:
       preferred_ip_protocol: ip4
       ip_protocol_fallback: false
