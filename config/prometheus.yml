@@ -48,11 +48,15 @@ scrape_configs:
     static_configs:
       - targets: ["dbServer:9273"]
 
-  - job_name: "ping-metrics"
+  - job_name: 'oracle-db-exporter'
     static_configs:
-      - targets: ["ping-metrics:8080"]
+      - targets: ['192.168.8.189:9161']
 
-  
+  # Example job for node_exporter
+  - job_name: 'node-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['node-exporter:9100']
 
   - job_name: 'blackbox'
     metrics_path: /probe
@@ -70,9 +74,9 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: blackbox-exporter:9115  # The blackbox exporter's real hostname:port.
-  - job_name: 'blackbox_exporter'  # collect blackbox exporter's operational metrics.
-    static_configs:
-      - targets: ['blackbox-exporter:9115']
+  # - job_name: 'blackbox_exporter'  # collect blackbox exporter's operational metrics.
+  #   static_configs:
+  #     - targets: ['blackbox-exporter:9115']
 
   - job_name: 'blackbox-ping'                                                                                                                                                                      
     metrics_path: /probe                                                                                                                                                                      
@@ -83,10 +87,13 @@ scrape_configs:
     static_configs:                                                                                                                                                                           
       - targets: ['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1', '208.67.220.220']                                                                                                                                                            
         labels:                                                                                                                                                                               
-          group: 'ATMs Network'                                                                                                                                                                   
-      - targets: ['1.1.1.1', '9.9.9.9', '208.67.222.222','149.112.112.112','192.203.230.10']                                           
+          group: 'ATMs'                                                                                                                                                                   
+      - targets: ['1.1.1.1', '192.168.8.104', '208.67.222.222','149.112.112.112','192.203.230.10','192.168.8.187', '192.168.8.188']                                           
         labels:                                                                                                                                                                               
-          group: 'Host Servers Network' 
+          group: 'Host Servers' 
+      - targets: ['4.4.4.4','7.7.7.7']
+        labels:
+          group: 'VPNs'
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -105,9 +112,13 @@ scrape_configs:
       - targets: ['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1', '208.67.220.220']                                                                                                                                                            
         labels:                                                                                                                                                                               
           group: 'ATMs Network'                                                                                                                                                                   
-      - targets: ['1.1.1.1', '9.9.9.9', '208.67.222.222','149.112.112.112','192.203.230.10']                                           
+      - targets: ['1.1.1.1', '192.168.8.104', '208.67.222.222','149.112.112.112','192.203.230.10','192.168.8.188', '192.168.8.187']                                           
         labels:                                                                                                                                                                               
           group: 'Host Servers Network' 
+      - targets: ['4.4.4.4','7.7.7.7']
+        labels:
+          group: 'VPNs'
+  
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -115,6 +126,15 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: blackbox-exporter-ping:9115
-
+  - job_name: 'virtual-hosts'
+    scrape_interval: 6s
+    scrape_timeout: 5s
+    static_configs:
+            - targets: ['192.168.8.187:9182', '192.168.8.188:9182']
+  - job_name: 'wildfly'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['192.168.8.187:9990']
+          
 
 

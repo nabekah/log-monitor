@@ -7,38 +7,38 @@ services:
   #
   # Container to make fake logs
   #
-  logs:
-    build:
-      context: docker/logs
-      dockerfile: "Dockerfile"
-    volumes:
-      - logs:/logs/
-    restart: "always"
+  # logs:
+  #   build:
+  #     context: docker/logs
+  #     dockerfile: "Dockerfile"
+  #   volumes:
+  #     - logs:/logs/
+  #   restart: "always"
 
   #
   # Tool container for importing/exporting dashboards.
   #
-  tools:
-    build:
-      context: docker/tools
-      dockerfile: "Dockerfile"
-    volumes:
-      - .:/mnt
-      - logs:/logs/
-    restart: "always"
+  # tools:
+  #   build:
+  #     context: docker/tools
+  #     dockerfile: "Dockerfile"
+  #   volumes:
+  #     - .:/mnt
+  #     - logs:/logs/
+  #   restart: "always"
 
 
   #
-  # Container to read metrics from SEPTA Regional Rail.
-  #
-  septa:
-    build:
-      context: docker/septa
-      dockerfile: "Dockerfile"
-    volumes:
-      - .:/mnt
-      - logs:/logs/
-    restart: "always"
+  # # Container to read metrics from SEPTA Regional Rail.
+  # #
+  # septa:
+  #   build:
+  #     context: docker/septa
+  #     dockerfile: "Dockerfile"
+  #   volumes:
+  #     - .:/mnt
+  #     - logs:/logs/
+  #   restart: "always"
 
 
   #
@@ -68,51 +68,6 @@ services:
       - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
     restart: "always"
 
-  aspserver:
-    build:
-      context: docker/aspServer
-      dockerfile: "Dockerfile"
-    hostname: aspServer
-    ports:
-      - "8000:8080"
-    volumes:
-      - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "2g"
-    command: sh telegraf
-    restart: "always"
-
-  # windows:
-  #   image: dockurr/windows
-  #   container_name: windows
-  #   environment:
-  #     RAM_SIZE: "2G"
-  #     VERSION: "2012"
-  #   devices:
-  #     - /dev/kvm
-  #   cap_add:
-  #     - NET_ADMIN
-  #   ports:
-  #     - 8006:8006
-  #     - 3389:3389/tcp
-  #     - 3389:3389/udp
-  #   stop_grace_period: 2m   
-  #   # volumes:
-  #   #   - ./config/telegraf.conf:/etc/telegraf/telegraf.conf
-  #   # deploy:
-  #   #   resources:
-  #   #     limits:
-  #   #       cpus: "2"
-  #   #       memory: "2g"
-  #   # command: sh telegraf
-  #   restart: "always"
-
-  #
-  # The Loki database for storing logs.
-  #
   loki:
     #image: grafana/loki:2.3.0
     #image: grafana/loki:2.6.1
@@ -144,7 +99,22 @@ services:
       - ./data/prometheus:/prometheus
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
     restart: "always"
-  #
+
+  # node exporter for linux servers
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    # container_name: node-exporter
+    command:
+      - '--path.rootfs=/host'
+    # network_mode: host
+    pid: host
+    ports:
+      - 9100:9100
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+
+
   # blackBox to monitor HTTP Endpoint
 
   blackbox-exporter:
