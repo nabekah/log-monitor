@@ -64,9 +64,9 @@ scrape_configs:
       module: [http_2xx]  # Look for a HTTP 200 response.
     static_configs:
       - targets:
-        - https://fabmobile.firstatlanticbank.com.gh
-        - https://fabinternet.firstatlanticbank.com.gh
-        - https://ibank.firstatlanticbank.com.gh:5000
+        - https://testurl.com
+        - https://test2url.com
+        - https://test3url.com:5000
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
